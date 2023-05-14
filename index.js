@@ -105,7 +105,7 @@ const updateEmployee = [
 // Function that displays the welcome screen
 function init() {
     console.log(
-        `----------------------------------------------------------------
+        `         ----------------------------------------------------------------
         |                                                               |
         |   EEEEEE M    M PPPPP   L      OOOOOO Y     Y EEEEEE EEEEEE   |
         |   E      MM  MM P    P  L      O    O  Y   Y  E      E        |
@@ -128,26 +128,48 @@ function menu() {
     inquirer
         .prompt(options)
         .then(selection => {
+            // View All Employees option
+            let employees = [];
+            let employeeName;
+            let managerName;
             if (selection.menu === 'View All Employees') {
                 db.query(
-                    'SELECT employee.id, employee.first_name, employee.last_name, role.title, department.department_name, role.salary FROM employee INNER JOIN role ON employee.role_id=role.id INNER JOIN department ON role.department_id=department.id;',
-                    function (err, results) {
+                    `SELECT first_name, last_name, id FROM employee;`,
+                    function(err, results) {
                         if (err) {
                             console.log(err);
                         }
-                        const table = new Table({
-                            head: ['ID', 'FIRST NAME', 'LAST NAME', 'TITLE', 'DEPARTMENT', 'SALARY'],
-                            colWidths: [4, 30, 30, 30, 30, 8]
-                        });
                         for (let i = 0; i < results.length; i++) {
-                            table.push(
-                                [`${results[i].id}`, `${results[i].first_name}`, `${results[i].last_name}`, `${results[i].title}`, `${results[i].department_name}`, `${results[i].salary}`]
-                            );
+                            employeeName = `${results[i].first_name} ${results[i].last_name}`;
+                            employees.push(employeeName);
                         }
-                        console.log(table.toString());
-                        menu();
+                        db.query(
+                            'SELECT employee.id, employee.first_name, employee.last_name, role.title, department.department_name, role.salary, employee.manager_id FROM employee INNER JOIN role ON employee.role_id=role.id INNER JOIN department ON role.department_id=department.id;',
+                            function (err, results) {
+                                if (err) {
+                                    console.log(err);
+                                }
+                                const table = new Table({
+                                    head: ['ID', 'FIRST NAME', 'LAST NAME', 'TITLE', 'DEPARTMENT', 'SALARY', 'MANAGER'],
+                                    colWidths: [4, 30, 30, 30, 30, 8, 30]
+                                });
+                                for (let i = 0; i < results.length; i++) {
+                                    if (results[i].manager_id !== null){
+                                    managerName = employees[results[i].manager_id - 1];
+                                    } else {
+                                        managerName = null;
+                                    }
+                                    table.push(
+                                        [`${results[i].id}`, `${results[i].first_name}`, `${results[i].last_name}`, `${results[i].title}`, `${results[i].department_name}`, `${results[i].salary}`, `${managerName}`]
+                                    );
+                                }
+                                console.log(table.toString());
+                                menu();
+                            }
+                        )
                     }
                 )
+            // Add Employee option
             } else if (selection.menu === 'Add Employee') {
                 let roleID;
                 let managerID;
@@ -176,16 +198,16 @@ function menu() {
                                                 if (err) {
                                                     console.log(err);
                                                 }
-                                                console.log(`\n${newEmployee.first_name} ${newEmployee.last_name} added to list of employees!`);
+                                                console.log(`\n${newEmployee.first_name} ${newEmployee.last_name} added to list of employees!\n`);
+                                                menu();
                                             }
                                         )
-                                        console.log('\n');
-                                        menu();
                                     }
                                 )
                             }
                         )
                     })
+            // View All Roles option
             } else if (selection.menu === 'View All Roles') {
                 db.query(
                     'SELECT role.id, role.title, department.department_name, role.salary FROM role INNER JOIN department ON role.department_id=department.id;',
@@ -206,35 +228,35 @@ function menu() {
                         menu();
                     }
                 )
+            // Update Employee Role option
             } else if (selection.menu === 'Update Employee Role') {
                 let employeeName = [];
                 let roleID;
-
                 inquirer
                     .prompt(updateEmployee)
                     .then(updatedEmployee => {
                         employeeName = updatedEmployee.name.split(' ');
                         db.query(
                             `SELECT id FROM role WHERE title='${updatedEmployee.newRole}';`,
-                            function(err, results) {
-                                if(err) {
+                            function (err, results) {
+                                if (err) {
                                     console.log(err);
                                 }
                                 roleID = results[0].id;
                                 db.query(
                                     `UPDATE employee SET role_id=${roleID} WHERE first_name='${employeeName[0]}' AND last_name='${employeeName[1]}';`,
-                                    function(err) {
+                                    function (err) {
                                         if (err) {
                                             console.log(err);
                                         }
-                                        console.log('\nEmployee role updated successfully!');
-                                        console.log('\n');
+                                        console.log('\nEmployee role updated successfully!\n');
                                         menu();
                                     }
                                 )
                             }
                         )
                     })
+            // Add Role option
             } else if (selection.menu === 'Add Role') {
                 let department;
                 inquirer
@@ -243,7 +265,6 @@ function menu() {
                         db.query(
                             `SELECT id FROM department WHERE department_name='${newRole.department}';`,
                             function (err, results) {
-                                console.log(results);
                                 if (err) {
                                     console.log(err);
                                 }
@@ -254,13 +275,14 @@ function menu() {
                                         if (err) {
                                             console.log(err);
                                         }
-                                        console.log(`\n${newRole.role} role added!`);
+                                        console.log(`\n${newRole.role} role added!\n`);
                                         menu();
                                     }
                                 )
                             }
                         )
                     })
+            // View All Departments option
             } else if (selection.menu === 'View All Departments') {
                 db.query(
                     'SELECT * FROM department;',
@@ -281,6 +303,7 @@ function menu() {
                         menu();
                     }
                 )
+            // Add Department option
             } else if (selection.menu === 'Add Department') {
                 inquirer
                     .prompt(addDepartment)
@@ -291,12 +314,12 @@ function menu() {
                                 if (err) {
                                     console.log(err);
                                 }
-                                console.log(`\n${results.department} department added!`);
-                                console.log('\n');
+                                console.log(`\n${newDepartment.department} department added!\n`);
                                 menu();
                             }
                         )
                     })
+            // Quit option
             } else if (selection.menu === 'Quit') {
                 console.log(`Good Bye!`);
                 return;
@@ -306,22 +329,6 @@ function menu() {
 
 init();
 menu();
-
-// Get all employees
-app.get('/api/employees', (req, res) => {
-    const sql = `SELECT * FROM employee`;
-
-    db.query(sql, (err, rows) => {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
-        }
-        res.json({
-            message: 'success',
-            data: rows
-        });
-    });
-});
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
