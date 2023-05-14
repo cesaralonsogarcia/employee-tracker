@@ -20,6 +20,20 @@ const db = mysql.createConnection(
     console.log(`Connected to the employee_db database.`)
 );
 
+let roles = [];
+
+db.query(
+    `SELECT department_name FROM department;`,
+    function (err, results) {
+        if (err) {
+            console.log(err);
+        }
+        for (let i = 0; i < results.length; i++) {
+            roles[i] = results[i].department_name;
+        }
+    }
+);
+
 // Arrays of options for app menu
 const options = [
     {
@@ -88,25 +102,29 @@ const addEmployee = [
     },
 ];
 
-// Function that runs the menu options
+// Function that displays the welcome screen
 function init() {
     console.log(
-`----------------------------------------------------------------
-|                                                               |
-|   EEEEEE M    M PPPPP   L      OOOOOO Y     Y EEEEEE EEEEEE   |
-|   E      MM  MM P    P  L      O    O  Y   Y  E      E        |
-|   EEEEEE M MM M PPPPP   L      O    O   YYY   EEEEEE EEEEEE   |
-|   E      M    M P       L      O    O    Y    E      E        |
-|   EEEEEE M    M P       LLLLLL OOOOOO    Y    EEEEEE EEEEEE   |
-|                                                               |
-|        M    M AAAAAA N   N AAAAAA GGGGGG EEEEEE RRRRR         |
-|        MM  MM A    A NN  N A    A G      E      R    R        |
-|        M MM M AAAAAA N N N AAAAAA G  GGG EEEEEE RRRRR         |
-|        M    M A    A N  NN A    A G    G E      R  R          |
-|        M    M A    A N   N A    A GGGGGG EEEEEE R   R         |
-|                                                               |
------------------------------------------------------------------`   
+        `----------------------------------------------------------------
+        |                                                               |
+        |   EEEEEE M    M PPPPP   L      OOOOOO Y     Y EEEEEE EEEEEE   |
+        |   E      MM  MM P    P  L      O    O  Y   Y  E      E        |
+        |   EEEEEE M MM M PPPPP   L      O    O   YYY   EEEEEE EEEEEE   |
+        |   E      M    M P       L      O    O    Y    E      E        |
+        |   EEEEEE M    M P       LLLLLL OOOOOO    Y    EEEEEE EEEEEE   |
+        |                                                               |
+        |        M    M AAAAAA N   N AAAAAA GGGGGG EEEEEE RRRRR         |
+        |        MM  MM A    A NN  N A    A G      E      R    R        |
+        |        M MM M AAAAAA N N N AAAAAA G  GGG EEEEEE RRRRR         |
+        |        M    M A    A N  NN A    A G    G E      R  R          |
+        |        M    M A    A N   N A    A GGGGGG EEEEEE R   R         |
+        |                                                               |
+        -----------------------------------------------------------------`
     );
+}
+
+// Function that runs the menu options
+function menu() {
     inquirer
         .prompt(options)
         .then(selection => {
@@ -117,33 +135,52 @@ function init() {
                         if (err) {
                             console.log(err);
                         }
-                        console.log('ID\tFIRST NAME\tLAST NAME\tTITLE\tDEPARTMENT\tSALARY');
+                        console.log('\nID\tFIRST NAME\tLAST NAME\tTITLE\tDEPARTMENT\tSALARY');
                         console.log('--\t----------\t----------\t---------------\t------------\t------');
                         for (let i = 0; i < results.length; i++) {
                             console.log(`${results[i].id}\t${results[i].first_name}\t${results[i].last_name}\t${results[i].title}\t${results[i].department_name}\t${results[i].salary}`);
                         }
+                        console.log('\n');
+                        menu();
                     }
                 )
-                init();
             } else if (selection.menu === 'Add Employee') {
+                let roleID;
+                let managerID;
+                let managerName = [];
                 inquirer
                     .prompt(addEmployee)
                     .then(newEmployee => {
+                        managerName = newEmployee.manager.split(' ');
                         db.query(
-                            `SELECT `
-                        );
-                        db.query(
-                            `INSERT INTO employee (first_name, last_name) VALUES ('${newDepartment.department}');`,
+                            `SELECT id FROM role WHERE title='${newEmployee.role}';`,
                             function (err, results) {
                                 if (err) {
                                     console.log(err);
                                 }
-                                console.log(`${results.department} department added!`);
+                                roleID = results[0].id;
+                                db.query(
+                                    `SELECT id FROM employee WHERE first_name='${managerName[0]}' AND last_name='${managerName[1]}';`,
+                                    function (err, results) {
+                                        if (err) {
+                                            console.log(err);
+                                        }
+                                        managerID = results[0].id;
+                                        db.query(
+                                            `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${newEmployee.first_name}', '${newEmployee.last_name}', '${roleID}', '${managerID}');`,
+                                            function (err, results) {
+                                                if (err) {
+                                                    console.log(err);
+                                                }
+                                                console.log(`\n${newEmployee.first_name} ${newEmployee.last_name} added to list of employees!`);
+                                            }
+                                        )
+                                        console.log('\n');
+                                        menu();
+                                    }
+                                )
                             }
                         )
-                    })
-                    .then(() => {
-                        init();
                     })
             } else if (selection.menu === 'View All Roles') {
                 db.query(
@@ -152,14 +189,15 @@ function init() {
                         if (err) {
                             console.log(err);
                         }
-                        console.log('ID\tTITLE\t\tDEPARTMENT\tSALARY');
+                        console.log('\nID\tTITLE\t\tDEPARTMENT\tSALARY');
                         console.log('--\t------------------------------\t------------\t------');
                         for (let i = 0; i < results.length; i++) {
                             console.log(`${results[i].id}\t${results[i].title}\t${results[i].department_name}\t${results[i].salary}`);
                         }
+                        console.log('\n');
+                        menu();
                     }
                 )
-                init();
             } else if (selection.menu === 'Update Employee Role') {
                 console.log(`${selection.menu}`);
             } else if (selection.menu === 'Add Role') {
@@ -181,14 +219,12 @@ function init() {
                                         if (err) {
                                             console.log(err);
                                         }
-                                        console.log(`${newRole.role} role added!`);
+                                        console.log(`\n${newRole.role} role added!`);
+                                        menu();
                                     }
                                 )
                             }
                         )
-                    })
-                    .then(() => {
-                        init();
                     })
             } else if (selection.menu === 'View All Departments') {
                 db.query(
@@ -202,9 +238,10 @@ function init() {
                         for (let i = 0; i < results.length; i++) {
                             console.log(`${results[i].id}    ${results[i].department_name}`);
                         }
+                        console.log('\n');
+                        menu();
                     }
                 )
-                init();
             } else if (selection.menu === 'Add Department') {
                 inquirer
                     .prompt(addDepartment)
@@ -215,21 +252,21 @@ function init() {
                                 if (err) {
                                     console.log(err);
                                 }
-                                console.log(`${results.department} department added!`);
+                                console.log(`\n${results.department} department added!`);
+                                console.log('\n');
+                                menu();
                             }
                         )
                     })
-                    .then(() => {
-                        init();
-                    })
             } else if (selection.menu === 'Quit') {
-                console.log(`${selection.menu}`);
+                console.log(`Good Bye!`);
                 return;
             }
         })
 };
 
 init();
+menu();
 
 // Get all employees
 app.get('/api/employees', (req, res) => {
