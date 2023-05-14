@@ -1,6 +1,7 @@
 const inquirer = require('inquirer');
 const express = require('express');
 const mysql = require('mysql2');
+const Table = require('cli-table');
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -18,20 +19,6 @@ const db = mysql.createConnection(
         database: 'employee_db'
     },
     console.log(`Connected to the employee_db database.`)
-);
-
-let roles = [];
-
-db.query(
-    `SELECT department_name FROM department;`,
-    function (err, results) {
-        if (err) {
-            console.log(err);
-        }
-        for (let i = 0; i < results.length; i++) {
-            roles[i] = results[i].department_name;
-        }
-    }
 );
 
 // Arrays of options for app menu
@@ -148,12 +135,16 @@ function menu() {
                         if (err) {
                             console.log(err);
                         }
-                        console.log('\nID\tFIRST NAME\tLAST NAME\tTITLE\tDEPARTMENT\tSALARY');
-                        console.log('--\t----------\t----------\t---------------\t------------\t------');
+                        const table = new Table({
+                            head: ['ID', 'FIRST NAME', 'LAST NAME', 'TITLE', 'DEPARTMENT', 'SALARY'],
+                            colWidths: [4, 30, 30, 30, 30, 8]
+                        });
                         for (let i = 0; i < results.length; i++) {
-                            console.log(`${results[i].id}\t${results[i].first_name}\t${results[i].last_name}\t${results[i].title}\t${results[i].department_name}\t${results[i].salary}`);
+                            table.push(
+                                [`${results[i].id}`, `${results[i].first_name}`, `${results[i].last_name}`, `${results[i].title}`, `${results[i].department_name}`, `${results[i].salary}`]
+                            );
                         }
-                        console.log('\n');
+                        console.log(table.toString());
                         menu();
                     }
                 )
@@ -202,12 +193,16 @@ function menu() {
                         if (err) {
                             console.log(err);
                         }
-                        console.log('\nID\tTITLE\t\tDEPARTMENT\tSALARY');
-                        console.log('--\t------------------------------\t------------\t------');
+                        const table = new Table({
+                            head: ['ID', 'TITLE', 'DEPARTMENT', 'SALARY'],
+                            colWidths: [4, 30, 30, 8]
+                        });
                         for (let i = 0; i < results.length; i++) {
-                            console.log(`${results[i].id}\t${results[i].title}\t${results[i].department_name}\t${results[i].salary}`);
+                            table.push(
+                                [`${results[i].id}`, `${results[i].title}`, `${results[i].department_name}`, `${results[i].salary}`]
+                            );
                         }
-                        console.log('\n');
+                        console.log(table.toString());
                         menu();
                     }
                 )
@@ -273,12 +268,16 @@ function menu() {
                         if (err) {
                             console.log(err);
                         }
-                        console.log('\nID   NAME');
-                        console.log('--   ------------');
+                        const table = new Table({
+                            head: ['ID', 'DEPARTMENT'],
+                            colWidths: [4, 30]
+                        });
                         for (let i = 0; i < results.length; i++) {
-                            console.log(`${results[i].id}    ${results[i].department_name}`);
+                            table.push(
+                                [`${results[i].id}`, `${results[i].department_name}`]
+                            );
                         }
-                        console.log('\n');
+                        console.log(table.toString());
                         menu();
                     }
                 )
