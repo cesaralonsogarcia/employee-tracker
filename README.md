@@ -35,4 +35,4 @@ THEN I am prompted to select an employee to update and their new role and this i
 
 Click on screenshot to see walkthrough video:  
 
-[<img src='https://github.com/cesaralonsogarcia/employee-tracker/blob/main/assets/images/employee-tracker.png'>](address "Employee Tracker")
+[<img src='https://github.com/cesaralonsogarcia/employee-tracker/blob/main/assets/images/employee-tracker.png'>](https://watch.screencastify.com/v/fIJ1XqwlmtCvt4UCAfnb "Employee Tracker")
