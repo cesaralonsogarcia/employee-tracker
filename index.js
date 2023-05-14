@@ -102,6 +102,19 @@ const addEmployee = [
     },
 ];
 
+const updateEmployee = [
+    {
+        type: 'input',
+        name: 'name',
+        message: 'What is the name of the employee?',
+    },
+    {
+        type: 'input',
+        name: 'newRole',
+        message: 'What is the new role of the employee?',
+    },
+];
+
 // Function that displays the welcome screen
 function init() {
     console.log(
@@ -199,7 +212,34 @@ function menu() {
                     }
                 )
             } else if (selection.menu === 'Update Employee Role') {
-                console.log(`${selection.menu}`);
+                let employeeName = [];
+                let roleID;
+
+                inquirer
+                    .prompt(updateEmployee)
+                    .then(updatedEmployee => {
+                        employeeName = updatedEmployee.name.split(' ');
+                        db.query(
+                            `SELECT id FROM role WHERE title='${updatedEmployee.newRole}';`,
+                            function(err, results) {
+                                if(err) {
+                                    console.log(err);
+                                }
+                                roleID = results[0].id;
+                                db.query(
+                                    `UPDATE employee SET role_id=${roleID} WHERE first_name='${employeeName[0]}' AND last_name='${employeeName[1]}';`,
+                                    function(err) {
+                                        if (err) {
+                                            console.log(err);
+                                        }
+                                        console.log('\nEmployee role updated successfully!');
+                                        console.log('\n');
+                                        menu();
+                                    }
+                                )
+                            }
+                        )
+                    })
             } else if (selection.menu === 'Add Role') {
                 let department;
                 inquirer
