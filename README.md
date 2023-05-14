@@ -33,4 +33,6 @@ THEN I am prompted to select an employee to update and their new role and this i
 
 ## Application Screenshot and Walkthrough Video
 
+Click on screenshot to see walkthrough video:  
+
 [<img src='https://github.com/cesaralonsogarcia/employee-tracker/blob/main/assets/images/employee-tracker.png'>](address "Employee Tracker")
