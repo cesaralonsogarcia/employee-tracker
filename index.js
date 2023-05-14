@@ -19,7 +19,7 @@ const db = mysql.createConnection(
         database: 'employee_db'
     },
     console.log(`Connected to the employee_db database.`)
-);
+); 
 
 // Arrays of options for app menu
 const options = [
@@ -327,9 +327,8 @@ function menu() {
         })
 };
 
-init();
-menu();
-
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});  
+    console.log(`\nServer running on port ${PORT}`);
+    init();
+    menu();
+});
