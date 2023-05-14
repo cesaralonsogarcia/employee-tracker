@@ -48,19 +48,6 @@ const addDepartment = [
     }
 ];
 
-// const updateEmployee = [
-//     {
-//         type: 'input',
-//         name: 'name',
-//         message: 'What is the name of the employee?',
-//     },
-//     {
-//         type: 'input',
-//         name: 'newRole',
-//         message: 'What is the new role of the employee?',
-//     },
-// ];
-
 // Function that displays the welcome screen
 function init() {
     console.log(
@@ -128,7 +115,7 @@ function menu() {
                         )
                     }
                 )
-                // Add Employee option
+            // Add Employee option
             } else if (selection.menu === 'Add Employee') {
                 let roleID;
                 let managerID;
@@ -153,69 +140,69 @@ function menu() {
                                 for (let i = 0; i < results.length; i++) {
                                     managers.push(`${results[i].first_name} ${results[i].last_name}`);
                                 }
-                            }
-                        )
-                    }
-                )
-                inquirer
-                    .prompt(
-                        [
-                            {
-                                type: 'input',
-                                name: 'first_name',
-                                message: 'What is the first name of the employee?',
-                            },
-                            {
-                                type: 'input',
-                                name: 'last_name',
-                                message: 'What is the last name of the employee?',
-                            },
-                            {
-                                type: 'list',
-                                name: 'role',
-                                message: 'What is the role of the employee?',
-                                choices: roles,
-                            },
-                            {
-                                type: 'list',
-                                name: 'manager',
-                                message: 'Who is the manager of the employee?',
-                                choices: managers,
-                            },
-                        ]
-                    )
-                    .then(newEmployee => {
-                        managerName = newEmployee.manager.split(' ');
-                        db.query(
-                            `SELECT id FROM role WHERE title='${newEmployee.role}';`,
-                            function (err, results) {
-                                if (err) {
-                                    console.log(err);
-                                }
-                                roleID = results[0].id;
-                                db.query(
-                                    `SELECT id FROM employee WHERE first_name='${managerName[0]}' AND last_name='${managerName[1]}';`,
-                                    function (err, results) {
-                                        if (err) {
-                                            console.log(err);
-                                        }
-                                        managerID = results[0].id;
+                                inquirer
+                                    .prompt(
+                                        [
+                                            {
+                                                type: 'input',
+                                                name: 'first_name',
+                                                message: 'What is the first name of the employee?',
+                                            },
+                                            {
+                                                type: 'input',
+                                                name: 'last_name',
+                                                message: 'What is the last name of the employee?',
+                                            },
+                                            {
+                                                type: 'list',
+                                                name: 'role',
+                                                message: 'What is the role of the employee?',
+                                                choices: roles,
+                                            },
+                                            {
+                                                type: 'list',
+                                                name: 'manager',
+                                                message: 'Who is the manager of the employee?',
+                                                choices: managers,
+                                            },
+                                        ]
+                                    )
+                                    .then(newEmployee => {
+                                        managerName = newEmployee.manager.split(' ');
                                         db.query(
-                                            `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${newEmployee.first_name}', '${newEmployee.last_name}', '${roleID}', '${managerID}');`,
+                                            `SELECT id FROM role WHERE title='${newEmployee.role}';`,
                                             function (err, results) {
                                                 if (err) {
                                                     console.log(err);
                                                 }
-                                                console.log(`\n${newEmployee.first_name} ${newEmployee.last_name} added to list of employees!\n`);
-                                                menu();
+                                                roleID = results[0].id;
+                                                db.query(
+                                                    `SELECT id FROM employee WHERE first_name='${managerName[0]}' AND last_name='${managerName[1]}';`,
+                                                    function (err, results) {
+                                                        if (err) {
+                                                            console.log(err);
+                                                        }
+                                                        managerID = results[0].id;
+                                                        db.query(
+                                                            `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${newEmployee.first_name}', '${newEmployee.last_name}', '${roleID}', '${managerID}');`,
+                                                            function (err, results) {
+                                                                if (err) {
+                                                                    console.log(err);
+                                                                }
+                                                                console.log(`\n${newEmployee.first_name} ${newEmployee.last_name} added to list of employees!\n`);
+                                                                menu();
+                                                            }
+                                                        )
+                                                    }
+                                                )
                                             }
                                         )
-                                    }
-                                )
+                                    })
                             }
                         )
-                    })
-                // View All Roles option
+                    }
+                )
+            // View All Roles option
             } else if (selection.menu === 'View All Roles') {
                 db.query(
                     'SELECT role.id, role.title, department.department_name, role.salary FROM role INNER JOIN department ON role.department_id=department.id;',
@@ -236,7 +223,7 @@ function menu() {
                         menu();
                     }
                 )
-                // Update Employee Role option
+            // Update Employee Role option
             } else if (selection.menu === 'Update Employee Role') {
                 let employeeList = [];
                 let roleList = [];
@@ -303,7 +290,7 @@ function menu() {
                         )
                     }
                 )
-                // Add Role option
+            // Add Role option
             } else if (selection.menu === 'Add Role') {
                 let department;
                 let departments = [];
@@ -360,7 +347,7 @@ function menu() {
                             })
                     }
                 )
-                // View All Departments option
+            // View All Departments option
             } else if (selection.menu === 'View All Departments') {
                 db.query(
                     'SELECT * FROM department;',
@@ -381,7 +368,7 @@ function menu() {
                         menu();
                     }
                 )
-                // Add Department option
+            // Add Department option
             } else if (selection.menu === 'Add Department') {
                 inquirer
                     .prompt(addDepartment)
@@ -397,7 +384,7 @@ function menu() {
                             }
                         )
                     })
-                // Quit option
+            // Quit option
             } else if (selection.menu === 'Quit') {
                 console.log(`Good Bye!`);
                 return;
